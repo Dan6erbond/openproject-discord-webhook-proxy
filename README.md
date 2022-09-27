@@ -1,4 +1,4 @@
-[![Docker Image CI](https://github.com/Dan6erbond/openproject-discord-webhook-proxy/actions/workflows/docker-image.yml/badge.svg?event=deployment_status)](https://github.com/Dan6erbond/openproject-discord-webhook-proxy/actions/workflows/docker-image.yml)
+[![Docker Build](https://github.com/Dan6erbond/openproject-discord-webhook-proxy/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Dan6erbond/openproject-discord-webhook-proxy/actions/workflows/docker-image.yml)
 
 # OpenProject Discord Webhook Proxy
 
