@@ -1,3 +1,5 @@
+[![Docker Image CI](https://github.com/Dan6erbond/openproject-discord-webhook-proxy/actions/workflows/docker-image.yml/badge.svg?event=deployment_status)](https://github.com/Dan6erbond/openproject-discord-webhook-proxy/actions/workflows/docker-image.yml)
+
 # OpenProject Discord Webhook Proxy
 
 A webhook proxy for [OpenProject webhooks](https://www.openproject.org/docs/system-admin-guide/incoming-and-outgoing/webhooks/) to Discord written in Go.
