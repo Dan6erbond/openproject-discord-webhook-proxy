@@ -40,7 +40,7 @@ jobs:
       - name: Docker Hub Description
         uses: ms-jpq/sync-dockerhub-readme@v1
         with:
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: dan6erbond/openproject-discord-webhook-proxy
           readme: "./README.md"
