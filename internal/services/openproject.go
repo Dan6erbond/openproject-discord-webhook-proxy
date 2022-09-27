@@ -114,7 +114,7 @@ func (ops *OpenProjectService) GetWorkPackagePayload(payload openproject.WorkPac
 
 	priorityEmojiMappings := viper.GetStringMapString("openproject.priorityemojimappings")
 
-	if emoji, ok := priorityEmojiMappings[payload.WorkPackage.Embedded.Status.Name]; ok {
+	if emoji, ok := priorityEmojiMappings[payload.WorkPackage.Embedded.Priority.Name]; ok {
 		embedBuilder.Field(discord.Field{
 			Name:   "Priority",
 			Value:  fmt.Sprintf("%s %s", emoji, payload.WorkPackage.Embedded.Priority.Name),
