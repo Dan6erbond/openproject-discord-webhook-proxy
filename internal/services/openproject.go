@@ -59,7 +59,6 @@ func (ops *OpenProjectService) GetWorkPackagePayload(payload openproject.WorkPac
 		Path:   fmt.Sprintf("/projects/%s", payload.WorkPackage.Embedded.Project.Identifier),
 	}
 
-	ops.logger.Println(viper.GetString("openproject.baseurl"))
 	workPackageUrl := url.URL{
 		Scheme: openProjectBaseUrl.Scheme,
 		Host:   openProjectBaseUrl.Host,
