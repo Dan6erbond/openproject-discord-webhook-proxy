@@ -3,7 +3,7 @@ name: Docker Image CI
 on:
   push:
     tags:
-    - '*'
+      - "*"
 
 jobs:
   build:
@@ -37,3 +37,9 @@ jobs:
             dan6erbond/openproject-discord-webhook-proxy:${{ github.ref_name }}
             ghcr.io/dan6erbond/openproject-discord-webhook-proxy:latest
             ghcr.io/dan6erbond/openproject-discord-webhook-proxy:${{ github.ref_name }}
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: peterevans/dockerhub-description
