@@ -1,6 +1,7 @@
 package public
 
 import (
+	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/controllers"
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/routes"
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/services"
 	"go.uber.org/fx"
@@ -12,6 +13,9 @@ func NewApp() *fx.App {
 		fx.Provide(
 			NewLogger,
 			services.NewOpenProjectService,
+			services.NewWebhookService,
+			services.NewDiscordService,
+			controllers.NewWebhookController,
 			NewMux,
 		),
 		fx.Invoke(routes.RegisterOpenProjectRoutes),

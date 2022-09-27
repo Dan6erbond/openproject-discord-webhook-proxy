@@ -1,20 +1,18 @@
 package services
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 
+	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/config"
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/discord"
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/openproject"
-	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 )
 
@@ -22,9 +20,9 @@ type OpenProjectService struct {
 	logger *log.Logger
 }
 
-func (ops *OpenProjectService) ValidateSignature(body []byte, webhook map[string]interface{}, r *http.Request) error {
+func (ops *OpenProjectService) ValidateSignature(body []byte, webhook config.Webhook, r *http.Request) error {
 	signature := r.Header["X-Op-Signature"]
-	h := hmac.New(sha1.New, []byte(webhook["secret"].(string)))
+	h := hmac.New(sha1.New, []byte(webhook.Secret))
 
 	jsonString, err := json.Marshal(string(body))
 	if err != nil {
@@ -41,74 +39,18 @@ func (ops *OpenProjectService) ValidateSignature(body []byte, webhook map[string
 }
 
 func (ops *OpenProjectService) HandleWebhook(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	webhooks := viper.GetStringMap("webhooks")
-	var webhook map[string]interface{}
-	for name, w := range webhooks {
-		if wh, ok := w.(map[string]interface{}); ok {
-			path, ok := wh["path"].(string)
-			if (ok && path != "" && path == vars["name"]) || name == vars["name"] {
-				webhook = wh
-				break
-			}
-		}
-	}
 
-	if webhook == nil {
-		http.Error(w, "Couldn't find matching webhook", http.StatusNotFound)
-		return
-	}
-
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	/* err = ops.ValidateSignature(body, webhook, r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-	} */
-
-	var payload openproject.Payload
-	err = json.Unmarshal(body, &payload)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	actions := webhook["actions"].([]interface{})
-	for _, action := range actions {
-		if payload.Action == action.(string) {
-			switch payload.Action {
-			case "work_package:created":
-				ops.HandleWorkPackageCreatedWebhook(body, webhook, w, r)
-				return
-			default:
-				http.Error(w, "Couldn't find action for webhook", http.StatusNotFound)
-			}
-		}
-	}
 }
 
-func (ops *OpenProjectService) HandleWorkPackageCreatedWebhook(body []byte, webhook map[string]interface{}, w http.ResponseWriter, r *http.Request) {
-	var payload openproject.WorkPackageWebhookPayload
-	err := json.Unmarshal(body, &payload)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
+func (ops *OpenProjectService) GetWorkPackagePayload(payload openproject.WorkPackageWebhookPayload) (discord.Webhook, error) {
 	color, err := strconv.ParseInt(payload.WorkPackage.Embedded.Type.Color[1:], 16, 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return discord.Webhook{}, err
 	}
 
 	openProjectBaseUrl, err := url.Parse(viper.GetString("openproject.baseurl"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return discord.Webhook{}, err
 	}
 
 	projectUrl := url.URL{
@@ -124,9 +66,14 @@ func (ops *OpenProjectService) HandleWorkPackageCreatedWebhook(body []byte, webh
 		Path:   fmt.Sprintf("/projects/%s/work_packages/%d/activity", payload.WorkPackage.Embedded.Project.Identifier, payload.WorkPackage.ID),
 	}
 
-	webhookBuilder := discord.
-		WebhookBuilder().
-		Content("Work package created")
+	webhookBuilder := discord.WebhookBuilder()
+
+	if payload.Action == "work_package:created" {
+		webhookBuilder.Content("Work package created")
+	} else {
+		webhookBuilder.Content("Work package updated")
+	}
+
 	embedBuilder := discord.EmbedBuilder().
 		Author(discord.Author{
 			Name:    payload.WorkPackage.Embedded.Project.Name,
@@ -198,15 +145,29 @@ func (ops *OpenProjectService) HandleWorkPackageCreatedWebhook(body []byte, webh
 		})
 	}
 
-	embedBuilder.Field(discord.Field{
-		Name:  "Responsible",
-		Value: fmt.Sprintf("%s <%s>", payload.WorkPackage.Embedded.Responsible.Name, payload.WorkPackage.Embedded.Responsible.Email),
-	})
+	if payload.WorkPackage.Embedded.Responsible.Name != "" {
+		embedBuilder.Field(discord.Field{
+			Name:  "Responsible",
+			Value: fmt.Sprintf("%s <%s>", payload.WorkPackage.Embedded.Responsible.Name, payload.WorkPackage.Embedded.Responsible.Email),
+		})
+	} else {
+		embedBuilder.Field(discord.Field{
+			Name:  "Responsible",
+			Value: "None",
+		})
+	}
 
-	embedBuilder.Field(discord.Field{
-		Name:  "Assignee",
-		Value: fmt.Sprintf("%s <%s>", payload.WorkPackage.Embedded.Assignee.Name, payload.WorkPackage.Embedded.Assignee.Email),
-	})
+	if payload.WorkPackage.Embedded.Assignee.Name != "" {
+		embedBuilder.Field(discord.Field{
+			Name:  "Assignee",
+			Value: fmt.Sprintf("%s <%s>", payload.WorkPackage.Embedded.Assignee.Name, payload.WorkPackage.Embedded.Assignee.Email),
+		})
+	} else {
+		embedBuilder.Field(discord.Field{
+			Name:  "Assignee",
+			Value: "None",
+		})
+	}
 
 	embedBuilder.Field(discord.Field{
 		Name:   "Remaining time",
@@ -219,32 +180,7 @@ func (ops *OpenProjectService) HandleWorkPackageCreatedWebhook(body []byte, webh
 			embedBuilder.Embed(),
 		)
 
-	content, err := json.Marshal(webhookBuilder.Webhook())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	contentReader := bytes.NewReader(content)
-	resp, err := http.Post(webhook["url"].(string), "application/json", contentReader)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if string(respBody) != "" {
-		http.Error(w, string(respBody), http.StatusInternalServerError)
-	}
-
-	if resp.StatusCode != http.StatusCreated {
-		http.Error(w, "Discord error", http.StatusInternalServerError)
-	}
-
-	w.WriteHeader(http.StatusOK)
+	return webhookBuilder.Webhook(), nil
 }
 
 func NewOpenProjectService(logger *log.Logger) *OpenProjectService {
