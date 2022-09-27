@@ -2,10 +2,12 @@ package public
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/spf13/viper"
 	"go.uber.org/fx"
 )
 
@@ -14,7 +16,7 @@ func NewMux(lc fx.Lifecycle, logger *log.Logger) *mux.Router {
 
 	r := mux.NewRouter()
 	server := &http.Server{
-		Addr:    "127.0.0.1:5001",
+		Addr:    fmt.Sprintf("%s:%s", viper.GetString("server.host"), viper.GetString("server.port")),
 		Handler: r,
 	}
 
