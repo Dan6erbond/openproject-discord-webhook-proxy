@@ -14,7 +14,7 @@ func NewMux(lc fx.Lifecycle, logger *log.Logger) *mux.Router {
 
 	r := mux.NewRouter()
 	server := &http.Server{
-		Addr:    ":5001",
+		Addr:    "127.0.0.1:5001",
 		Handler: r,
 	}
 
