@@ -17,8 +17,6 @@ func main() {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
-	// fmt.Printf("%s", viper.GetStringMapString("storage.none"))
-
 	app := public.NewApp()
 	app.Run()
 }
