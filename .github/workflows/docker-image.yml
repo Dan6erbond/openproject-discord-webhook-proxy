@@ -42,4 +42,5 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+          short-description: A webhook proxy for OpenProject webhooks to Discord written in Go.
           repository: peterevans/dockerhub-description
