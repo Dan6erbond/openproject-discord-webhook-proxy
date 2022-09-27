@@ -38,9 +38,9 @@ jobs:
             ghcr.io/dan6erbond/openproject-discord-webhook-proxy:latest
             ghcr.io/dan6erbond/openproject-discord-webhook-proxy:${{ github.ref_name }}
       - name: Docker Hub Description
-        uses: peter-evans/dockerhub-description@v3
+        uses: ms-jpq/sync-dockerhub-readme@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          short-description: A webhook proxy for OpenProject webhooks to Discord written in Go.
-          repository: peterevans/dockerhub-description
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          repository: dan6erbond/openproject-discord-webhook-proxy
+          readme: "./README.md"
