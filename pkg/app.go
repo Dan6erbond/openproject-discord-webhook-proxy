@@ -12,6 +12,8 @@ func NewApp() *fx.App {
 	app := fx.New(
 		fx.Provide(
 			NewLogger,
+			NewMux,
+			services.NewStorageService,
 			services.NewOpenProjectService,
 			services.NewWebhookService,
 			services.NewDiscordService,
