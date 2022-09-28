@@ -23,6 +23,9 @@ func RegisterRequestMiddleware(lc fx.Lifecycle, logger *log.Logger, router *mux.
 						logger.Println(err)
 					}
 					err = storageService.SaveRequest(body, r.URL.Path)
+					if err != nil {
+						logger.Println(err)
+					}
 					r.Body = io.NopCloser(bytes.NewBuffer(body))
 					next.ServeHTTP(w, r)
 				})
