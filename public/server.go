@@ -23,9 +23,11 @@ func NewMux(lc fx.Lifecycle, logger *log.Logger) *mux.Router {
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			logger.Print("Starting HTTP server.")
-			// In production, we'd want to separate the Listen and Serve phases for
-			// better error-handling.
-			go server.ListenAndServe()
+			go func() {
+				if err := server.ListenAndServe(); err != nil {
+					logger.Fatal(err)
+				}
+			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
