@@ -24,3 +24,4 @@ go.work
 requests/
 config.yaml
 .env
+tmp/
