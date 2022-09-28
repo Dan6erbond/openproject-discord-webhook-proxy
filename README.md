@@ -37,7 +37,11 @@ A sample [`docker-compose.yml`](./docker-compose.yml) is provided with MinIO as 
 
 ### Kubernetes
 
-> 🚧 Work in progress.
+You can use Terraform to deploy the proxy to Kubernetes.
+
+[Dan6erbond/openproject-discord-webhook-proxy/kubernetes](https://registry.terraform.io/modules/Dan6erbond/openproject-discord-webhook-proxy/kubernetes/latest)
+
+For further deployment instructions on Kubernetes see the Terraform registry.
 
 ## Configuration
 
