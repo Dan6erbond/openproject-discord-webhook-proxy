@@ -72,7 +72,10 @@ func (s3 *S3StorageService) SaveRequest(body []byte, path string) error {
 		return err
 	}
 	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
-		os.Mkdir("tmp", 0755)
+		err = os.Mkdir("tmp", 0755)
+		if err != nil {
+			panic(err)
+		}
 	}
 	filepath := filepath.Join("tmp", filename)
 	err = os.WriteFile(filepath, body, 0644)
