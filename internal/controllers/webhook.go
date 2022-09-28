@@ -43,34 +43,42 @@ func (wc *WebhookController) HandleWebhook(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	actions := webhook.Actions
-	for _, action := range actions {
-		if payload.Action == action {
-			switch payload.Action {
-			case "work_package:created", "work_package:updated":
-				var payload openproject.WorkPackageWebhookPayload
-				err := json.Unmarshal(body, &payload)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-				webhookPayload, err := wc.openProjectService.GetWorkPackagePayload(payload)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				err = wc.discordService.SendWebhook(webhook, webhookPayload)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				w.WriteHeader(http.StatusOK)
-			default:
-				http.Error(w, "Couldn't find action for webhook", http.StatusNotFound)
+	run := false
+	if len(webhook.Actions) > 0 {
+		for _, action := range webhook.Actions {
+			if payload.Action == action {
+				run = true
 			}
 		}
+	} else {
+		run = true
 	}
 
+	if run {
+		switch payload.Action {
+		case "work_package:created", "work_package:updated":
+			var payload openproject.WorkPackageWebhookPayload
+			err := json.Unmarshal(body, &payload)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			webhookPayload, err := wc.openProjectService.GetWorkPackagePayload(payload)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			err = wc.discordService.SendWebhook(webhook, webhookPayload)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+		default:
+			wc.logger.Printf("Couldn't find handler for webhook %s with action %s", vars["name"], payload.Action)
+			http.Error(w, "Couldn't find action for webhook", http.StatusNotFound)
+		}
+	}
 }
 
 func NewWebhookController(logger *log.Logger, openProjectService *services.OpenProjectService, webhookService *services.WebhookService, discordService *services.DiscordService) *WebhookController {
