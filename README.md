@@ -21,6 +21,16 @@ A webhook proxy for [OpenProject webhooks](https://www.openproject.org/docs/syst
 
 ## Deploying
 
+You can launch the service as a simple Docker container:
+
+```sh
+docker run -v "./config.yaml:/app/config.yaml" -p "5001:5001" dan6erbond/openproject-discord-webhook-proxy:latest
+```
+
+A `config.yaml` needs to be provided which provides configuration for the service and webhooks. For more information see [Configuration](#configuration) below.
+
+> **Note:** If local storage is enabled, it is recommended to add a volume mount to `/app/requests` to view the requests on the host machine.
+
 ### Docker Compose
 
 A sample [`docker-compose.yml`](./docker-compose.yml) is provided with MinIO as the storage provider for request logs. You need to launch MinIO initially at [http://localhost:9002](http://localhost:9002) to create a bucket and service account, which can then be configured. See [Configuration](#configuration).
