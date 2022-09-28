@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/dan6erbond/openproject-discord-webhook-proxy/public"
+	"github.com/dan6erbond/openproject-discord-webhook-proxy/pkg"
 	"github.com/spf13/viper"
 )
 
@@ -42,6 +42,6 @@ func main() {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
-	app := public.NewApp()
+	app := pkg.NewApp()
 	app.Run()
 }
