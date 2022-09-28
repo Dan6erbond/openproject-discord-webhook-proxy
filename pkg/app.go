@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/controllers"
+	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/middleware"
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/routes"
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/services"
 	"go.uber.org/fx"
@@ -12,13 +13,17 @@ func NewApp() *fx.App {
 	app := fx.New(
 		fx.Provide(
 			NewLogger,
+			NewMux,
+			services.NewStorageService,
 			services.NewOpenProjectService,
 			services.NewWebhookService,
 			services.NewDiscordService,
 			controllers.NewWebhookController,
-			NewMux,
 		),
-		fx.Invoke(routes.RegisterOpenProjectRoutes),
+		fx.Invoke(
+			routes.RegisterOpenProjectRoutes,
+			middleware.RegisterRequestMiddleware,
+		),
 		fx.WithLogger(
 			func() fxevent.Logger {
 				return fxevent.NopLogger
