@@ -1,0 +1,76 @@
+name: Webhook Action
+description: Submit a new webhook action type from OpenProject that needs to be supported.
+title: "[ACTION] "
+labels: ["enhancement"]
+assignees:
+  - Dan6erbond
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Add details about the action type and how the Discord embed should look.
+  - type: input
+    attributes:
+      label: Action Type
+      description: The name of the action that needs to be supported.
+      placeholder: type:created|updated
+  - type: markdown
+    attributes:
+      value: |
+        ## What needs to be added?
+
+        - [ ] Types for the webhook payload.
+        - [ ] Handler for the payload actions `created` and `updated` in `controllers.WebhookController`.
+        - [ ] Handler for the payload in `services.OpenProject`.
+        - [ ] Any additional types, constants or configuration to make the feature work.
+  - type: textarea
+    id: webhook-payload
+    attributes:
+      label: Webhook Payload
+      description: Paste a copy of the webhook payload JSON for example from RequestBin.
+      placeholder: |
+        {
+          action: "type:created|updated",
+          body: {}
+        }
+  - type: textarea
+    id: discord-embed
+    attributes:
+      label: Discord Embed
+      description: Paste a sample embed showing how the resource should be displayed.
+      placeholder: |
+        {
+          "content": "this `supports` __a__ **subset** *of* ~~markdown~~ 😃 ```js\nfunction foo(bar) {\n  console.log(bar);\n}\n\nfoo(1);```",
+          "embed": {
+            "title": "title ~~(did you know you can have markdown here too?)~~",
+            "description": "this supports [named links](https://discordapp.com) on top of the previously shown subset of markdown. ```\nyes, even code blocks```",
+            "url": "https://discordapp.com",
+            "color": 6930170,
+            "timestamp": "2022-10-10T14:47:32.867Z",
+            "footer": {
+              "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png",
+              "text": "footer text"
+            },
+            "thumbnail": {
+              "url": "https://cdn.discordapp.com/embed/avatars/0.png"
+            },
+            "image": {
+              "url": "https://cdn.discordapp.com/embed/avatars/0.png"
+            },
+            "author": {
+              "name": "author name",
+              "url": "https://discordapp.com",
+              "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
+            },
+            "fields": [
+              {
+                "name": "🤔",
+                "value": "some of these properties have certain limits..."
+              }
+            ]
+          }
+        }
+  - type: markdown
+    attributes:
+      value: |
+        You can use [Embed Visualizer](https://leovoel.github.io/embed-visualizer/) to preview embeds.
