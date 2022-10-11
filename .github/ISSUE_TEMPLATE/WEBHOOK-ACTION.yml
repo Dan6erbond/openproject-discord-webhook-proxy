@@ -33,6 +33,7 @@ body:
           action: "type:created|updated",
           body: {}
         }
+      render: JSON
   - type: textarea
     id: discord-embed
     attributes:
@@ -70,6 +71,7 @@ body:
             ]
           }
         }
+      render: JSON
   - type: markdown
     attributes:
       value: |
