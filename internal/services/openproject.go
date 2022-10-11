@@ -38,10 +38,6 @@ func (ops *OpenProjectService) ValidateSignature(body []byte, webhook config.Web
 	return nil
 }
 
-func (ops *OpenProjectService) HandleWebhook(w http.ResponseWriter, r *http.Request) {
-
-}
-
 func (ops *OpenProjectService) GetWorkPackagePayload(payload openproject.WorkPackageWebhookPayload) (discord.Webhook, error) {
 	color, err := strconv.ParseInt(payload.WorkPackage.Embedded.Type.Color[1:], 16, 64)
 	if err != nil {
