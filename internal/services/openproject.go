@@ -77,30 +77,33 @@ func (ops *OpenProjectService) GetWorkPackagePayload(payload openproject.WorkPac
 		}).
 		Color(color).
 		Title(fmt.Sprintf("%s: %s", payload.WorkPackage.Embedded.Type.Name, payload.WorkPackage.Subject)).
-		URL(workPackageUrl.String()).
-		Description(payload.WorkPackage.Description.Raw)
-	if startDate, ok := payload.WorkPackage.StartDate.(string); ok {
+		URL(workPackageUrl.String())
+	if payload.WorkPackage.Description.Raw != "" {
+		embedBuilder.
+			Description(payload.WorkPackage.Description.Raw)
+	}
+	if startDate, ok := payload.WorkPackage.StartDate.(string); ok && startDate != "" {
 		embedBuilder.Field(discord.Field{
 			Name:   "Start date",
 			Value:  startDate,
 			Inline: true,
 		})
 	}
-	if derivedStartDate, ok := payload.WorkPackage.DerivedStartDate.(string); ok {
+	if derivedStartDate, ok := payload.WorkPackage.DerivedStartDate.(string); ok && derivedStartDate != "" {
 		embedBuilder.Field(discord.Field{
 			Name:   "Start date",
 			Value:  derivedStartDate,
 			Inline: true,
 		})
 	}
-	if dueDate, ok := payload.WorkPackage.DueDate.(string); ok {
+	if dueDate, ok := payload.WorkPackage.DueDate.(string); ok && dueDate != "" {
 		embedBuilder.Field(discord.Field{
 			Name:   "Start date",
 			Value:  dueDate,
 			Inline: true,
 		})
 	}
-	if derivedDueDate, ok := payload.WorkPackage.DerivedDueDate.(string); ok {
+	if derivedDueDate, ok := payload.WorkPackage.DerivedDueDate.(string); ok && derivedDueDate != "" {
 		embedBuilder.Field(discord.Field{
 			Name:   "Start date",
 			Value:  derivedDueDate,
@@ -109,35 +112,41 @@ func (ops *OpenProjectService) GetWorkPackagePayload(payload openproject.WorkPac
 	}
 
 	priorityEmojiMappings := viper.GetStringMapString("openproject.priorityemojimappings")
+	priorityName := payload.WorkPackage.Embedded.Priority.Name
 
-	if emoji, ok := priorityEmojiMappings[payload.WorkPackage.Embedded.Priority.Name]; ok {
-		embedBuilder.Field(discord.Field{
-			Name:   "Priority",
-			Value:  fmt.Sprintf("%s %s", emoji, payload.WorkPackage.Embedded.Priority.Name),
-			Inline: true,
-		})
-	} else {
-		embedBuilder.Field(discord.Field{
-			Name:   "Priority",
-			Value:  payload.WorkPackage.Embedded.Priority.Name,
-			Inline: true,
-		})
+	if priorityName != "" {
+		if emoji, ok := priorityEmojiMappings[priorityName]; ok {
+			embedBuilder.Field(discord.Field{
+				Name:   "Priority",
+				Value:  fmt.Sprintf("%s %s", emoji, priorityName),
+				Inline: true,
+			})
+		} else {
+			embedBuilder.Field(discord.Field{
+				Name:   "Priority",
+				Value:  priorityName,
+				Inline: true,
+			})
+		}
 	}
 
 	statusEmojiMappings := viper.GetStringMapString("openproject.statusemojimappings")
+	statusName := payload.WorkPackage.Embedded.Status.Name
 
-	if emoji, ok := statusEmojiMappings[payload.WorkPackage.Embedded.Status.Name]; ok {
-		embedBuilder.Field(discord.Field{
-			Name:   "Status",
-			Value:  fmt.Sprintf("%s %s", emoji, payload.WorkPackage.Embedded.Status.Name),
-			Inline: true,
-		})
-	} else {
-		embedBuilder.Field(discord.Field{
-			Name:   "Status",
-			Value:  payload.WorkPackage.Embedded.Status.Name,
-			Inline: true,
-		})
+	if statusName != "" {
+		if emoji, ok := statusEmojiMappings[statusName]; ok {
+			embedBuilder.Field(discord.Field{
+				Name:   "Status",
+				Value:  fmt.Sprintf("%s %s", emoji, statusName),
+				Inline: true,
+			})
+		} else {
+			embedBuilder.Field(discord.Field{
+				Name:   "Status",
+				Value:  statusName,
+				Inline: true,
+			})
+		}
 	}
 
 	if payload.WorkPackage.Embedded.Responsible.Name != "" {
@@ -164,11 +173,14 @@ func (ops *OpenProjectService) GetWorkPackagePayload(payload openproject.WorkPac
 		})
 	}
 
-	embedBuilder.Field(discord.Field{
-		Name:   "Remaining time",
-		Value:  payload.WorkPackage.RemainingTime,
-		Inline: false,
-	})
+	remainingTime := payload.WorkPackage.RemainingTime
+	if remainingTime != "" {
+		embedBuilder.Field(discord.Field{
+			Name:   "Remaining time",
+			Value:  remainingTime,
+			Inline: false,
+		})
+	}
 
 	webhookBuilder.
 		Embed(
