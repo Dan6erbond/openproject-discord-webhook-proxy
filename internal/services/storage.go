@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,6 +13,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 func init() {
@@ -47,7 +47,7 @@ func (nss *NilStorageService) SaveRequest(body []byte, path string) error {
 
 type LocalStorageService struct {
 	path   string
-	logger *log.Logger
+	logger *zap.Logger
 }
 
 func (lss *LocalStorageService) SaveRequest(body []byte, path string) error {
@@ -62,7 +62,7 @@ func (lss *LocalStorageService) SaveRequest(body []byte, path string) error {
 type S3StorageService struct {
 	minioClient *minio.Client
 	bucketName  string
-	logger      *log.Logger
+	logger      *zap.Logger
 }
 
 func (s3 *S3StorageService) SaveRequest(body []byte, path string) error {
@@ -88,7 +88,7 @@ func (s3 *S3StorageService) SaveRequest(body []byte, path string) error {
 	if err != nil {
 		return err
 	}
-	s3.logger.Printf("Successfully uploaded %s of size %d\n", objectName, info.Size)
+	s3.logger.Info("Successfully uploaded file", zap.String("objectName", objectName), zap.Int64("size", info.Size))
 	err = os.Remove(filepath)
 	if err != nil {
 		return err
@@ -96,20 +96,20 @@ func (s3 *S3StorageService) SaveRequest(body []byte, path string) error {
 	return nil
 }
 
-func NewS3StorageService(logger *log.Logger, secure bool, bucketName, region, endpoint, accessKey, secretKey string) *S3StorageService {
+func NewS3StorageService(logger *zap.Logger, secure bool, bucketName, region, endpoint, accessKey, secretKey string) *S3StorageService {
 	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure: secure,
 	})
 	if err != nil {
-		logger.Fatalln(err)
+		logger.Sugar().Error(err)
 	}
 
 	return &S3StorageService{minioClient, bucketName, logger}
 }
 
-func NewStorageService(lc fx.Lifecycle, logger *log.Logger, router *mux.Router) StorageService {
-	logger.Print("Executing NewStorageService.")
+func NewStorageService(lc fx.Lifecycle, logger *zap.Logger, router *mux.Router) StorageService {
+	logger.Info("Executing NewStorageService.")
 	s3Config := viper.GetStringMapString("storage.s3")
 	var storageService StorageService
 	if s3Bucket, ok := s3Config["bucketname"]; ok {

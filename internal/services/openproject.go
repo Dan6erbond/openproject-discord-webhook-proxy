@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -14,10 +13,11 @@ import (
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/discord"
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/openproject"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 type OpenProjectService struct {
-	logger *log.Logger
+	logger *zap.Logger
 }
 
 func (ops *OpenProjectService) ValidateSignature(body []byte, webhook config.Webhook, r *http.Request) error {
@@ -63,6 +63,7 @@ func (ops *OpenProjectService) GetWorkPackagePayload(payload openproject.WorkPac
 
 	webhookBuilder := discord.WebhookBuilder()
 
+	ops.logger.Info("Building embed", zap.String("action", payload.Action))
 	if payload.Action == "work_package:created" {
 		webhookBuilder.Content("Work package created")
 	} else {
@@ -190,8 +191,8 @@ func (ops *OpenProjectService) GetWorkPackagePayload(payload openproject.WorkPac
 	return webhookBuilder.Webhook(), nil
 }
 
-func NewOpenProjectService(logger *log.Logger) *OpenProjectService {
-	logger.Print("Executing NewOpenProjectService.")
+func NewOpenProjectService(logger *zap.Logger) *OpenProjectService {
+	logger.Info("Executing NewOpenProjectService.")
 	ops := OpenProjectService{logger}
 	return &ops
 }
