@@ -20,6 +20,7 @@ type WebhookController struct {
 
 func (wc *WebhookController) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	wc.logger.Info("Received payload for webhook", zap.String("name", vars["name"]))
 	webhook, err := wc.webhookService.GetWebhook(vars["name"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
