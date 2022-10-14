@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/config"
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/discord"
+	"go.uber.org/zap"
 )
 
 type DiscordService struct {
-	logger *log.Logger
+	logger *zap.Logger
 }
 
 func (ds *DiscordService) SendWebhook(webhook config.Webhook, webhookPayload discord.Webhook) error {
@@ -36,15 +36,15 @@ func (ds *DiscordService) SendWebhook(webhook config.Webhook, webhookPayload dis
 	}
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
-		ds.logger.Println(resp.StatusCode)
+		ds.logger.Error("Error sending Discord embed", zap.Int("responseCode", resp.StatusCode))
 		return fmt.Errorf("discord error")
 	}
 
 	return nil
 }
 
-func NewDiscordService(logger *log.Logger) *DiscordService {
-	logger.Print("Executing NewDiscordService.")
+func NewDiscordService(logger *zap.Logger) *DiscordService {
+	logger.Info("Executing NewDiscordService.")
 	ds := DiscordService{logger}
 	return &ds
 }

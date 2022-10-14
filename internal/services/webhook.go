@@ -2,14 +2,14 @@ package services
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/config"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 type WebhookService struct {
-	logger *log.Logger
+	logger *zap.Logger
 }
 
 func (ws *WebhookService) GetWebhook(webhookName string) (config.Webhook, error) {
@@ -29,14 +29,15 @@ func (ws *WebhookService) GetWebhook(webhookName string) (config.Webhook, error)
 	}
 
 	if !found {
+		ws.logger.Error("No matching webhook found", zap.String("webhookName", webhookName))
 		return webhook, fmt.Errorf("couldn't find matching webhook for name %s", webhookName)
 	}
 
 	return webhook, nil
 }
 
-func NewWebhookService(logger *log.Logger) *WebhookService {
-	logger.Print("Executing NewWebhookService.")
+func NewWebhookService(logger *zap.Logger) *WebhookService {
+	logger.Info("Executing NewWebhookService.")
 	ops := WebhookService{logger}
 	return &ops
 }

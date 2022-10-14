@@ -3,16 +3,16 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
-func NewMux(lc fx.Lifecycle, logger *log.Logger) *mux.Router {
-	logger.Print("Executing NewMux.")
+func NewMux(lc fx.Lifecycle, logger *zap.Logger) *mux.Router {
+	logger.Info("Executing NewMux.")
 
 	r := mux.NewRouter()
 	server := &http.Server{
@@ -22,16 +22,16 @@ func NewMux(lc fx.Lifecycle, logger *log.Logger) *mux.Router {
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			logger.Print("Starting HTTP server.")
+			logger.Info("Starting HTTP server.")
 			go func() {
 				if err := server.ListenAndServe(); err != nil {
-					logger.Fatal(err)
+					logger.Sugar().Error(err)
 				}
 			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			logger.Print("Stopping HTTP server.")
+			logger.Info("Stopping HTTP server.")
 			return server.Shutdown(ctx)
 		},
 	})

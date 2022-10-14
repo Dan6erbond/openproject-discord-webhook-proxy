@@ -1,12 +1,11 @@
 package pkg
 
 import (
-	"log"
-	"os"
+	"go.uber.org/zap"
 )
 
-func NewLogger() *log.Logger {
-	logger := log.New(os.Stdout, "" /* prefix */, 0 /* flags */)
-	logger.Print("Executing NewLogger.")
+func NewLogger() *zap.Logger {
+	logger, _ := zap.NewProduction()
+	logger.Info("Executing NewLogger.")
 	return logger
 }

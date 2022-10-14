@@ -7,6 +7,7 @@ import (
 	"github.com/dan6erbond/openproject-discord-webhook-proxy/internal/services"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
+	"go.uber.org/zap"
 )
 
 func NewApp() *fx.App {
@@ -24,11 +25,9 @@ func NewApp() *fx.App {
 			routes.RegisterOpenProjectRoutes,
 			middleware.RegisterRequestMiddleware,
 		),
-		fx.WithLogger(
-			func() fxevent.Logger {
-				return fxevent.NopLogger
-			},
-		),
+		fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
+			return &fxevent.ZapLogger{Logger: log}
+		}),
 	)
 
 	return app
